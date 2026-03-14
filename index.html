@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Rëstørē | Web3 Builder</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <style>
+        html {
+            scroll-behavior: smooth;
+        }
+
+        :root {
+            --neon-cyan: #00f0ff;
+            --neon-purple: #d400ff;
+            --neon-pink: #ff00aa;
+            --dark-bg: #0a0015;
+            --darker-bg: #05000a;
+            --text-light: #f0f0ff;
+            --glow-shadow: 0 0 10px, 0 0 20px, 0 0 40px, 0 0 80px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--dark-bg);
+            color: var(--text-light);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(0,240,255,0.08) 0%, transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(212,0,255,0.06) 0%, transparent 35%);
+            background-attachment: fixed;
+        }
+
+        /* Animated background particles / subtle glitch */
+        .bg-particles {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: -1;
+            background: 
+                repeating-linear-gradient(
+                    45deg,
+                    transparent,
+                    transparent 10px,
+                    rgba(212,0,255,0.015) 10px,
+                    rgba(212,0,255,0.015) 20px
+                );
+            animation: scanline 12s linear infinite;
+        }
+
+        @keyframes scanline {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 1.5rem 3rem;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            background: rgba(10,0,21,0.4);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0,240,255,0.12);
+        }
+
+        /* Neon Hamburger */
+        .menu-toggle {
+            display: none;
+        }
+
+        .hamburger {
+            position: relative;
+            width: 40px;
+            height: 28px;
+            cursor: pointer;
+            z-index: 1100;
+        }
+
+        .hamburger span {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--neon-cyan);
+            border-radius: 4px;
+            box-shadow: var(--glow-shadow) var(--neon-cyan);
+            transition: all 0.4s ease;
+        }
+
+        .hamburger span:nth-child(1) { top: 0; }
+        .hamburger span:nth-child(2) { top: 12px; }
+        .hamburger span:nth-child(3) { top: 24px; }
+
+        .menu-toggle:checked + .hamburger span:nth-child(1) {
+            transform: rotate(45deg) translate(8px, 8px);
+        }
+        .menu-toggle:checked + .hamburger span:nth-child(2) {
+            opacity: 0;
+            transform: translateX(-30px);
+        }
+        .menu-toggle:checked + .hamburger span:nth-child(3) {
+            transform: rotate(-45deg) translate(9px, -9px);
+        }
+
+        /* Side Menu */
+        .side-menu {
+            position: fixed;
+            top: 0;
+            right: -320px;
+            width: 320px;
+            height: 100%;
+            background: rgba(5,0,10,0.92);
+            backdrop-filter: blur(16px);
+            border-left: 1px solid rgba(0,240,255,0.18);
+            transition: right 0.5s cubic-bezier(0.77,0,0.175,1);
+            z-index: 999;
+            padding-top: 100px;
+        }
+
+        .menu-toggle:checked ~ .side-menu {
+            right: 0;
+        }
+
+        .side-menu ul {
+            list-style: none;
+        }
+
+        .side-menu a {
+            display: block;
+            padding: 1.8rem 3rem;
+            color: var(--text-light);
+            font-size: 1.4rem;
+            font-weight: 300;
+            text-decoration: none;
+            letter-spacing: 2px;
+            position: relative;
+            transition: all 0.4s ease;
+        }
+
+        .side-menu a::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background: linear-gradient(to bottom, var(--neon-cyan), var(--neon-purple));
+            transform: scaleY(0);
+            transform-origin: top;
+            transition: transform 0.4s ease;
+        }
+
+        .side-menu a:hover,
+        .side-menu a:focus {
+            color: var(--neon-cyan);
+            text-shadow: 0 0 20px var(--neon-cyan);
+            padding-left: 3.5rem;
+        }
+
+        .side-menu a:hover::before {
+            transform: scaleY(1);
+        }
+
+        /* Main Welcome Section */
+        main {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 0 2rem;
+        }
+
+        .profile-container {
+            position: relative;
+            margin-bottom: 3rem;
+        }
+
+        .profile-pic {
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 6px solid transparent;
+            background: linear-gradient(45deg, var(--neon-cyan), var(--neon-purple), var(--neon-pink)) border-box;
+            box-shadow: 
+                0 0 30px rgba(0,240,255,0.6),
+                0 0 60px rgba(212,0,255,0.4),
+                inset 0 0 40px rgba(255,255,255,0.1);
+            animation: pulse-glow 4s ease-in-out infinite alternate;
+        }
+
+        @keyframes pulse-glow {
+            from { box-shadow: 0 0 30px rgba(0,240,255,0.5), 0 0 60px rgba(212,0,255,0.3); }
+            to   { box-shadow: 0 0 50px rgba(0,240,255,0.9), 0 0 100px rgba(212,0,255,0.6); }
+        }
+
+        h1 {
+            font-size: 5.5rem;
+            font-weight: 900;
+            letter-spacing: 8px;
+            background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple), var(--neon-pink), var(--neon-cyan));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 
+                0 0 20px var(--neon-cyan),
+                0 0 40px var(--neon-purple),
+                0 0 80px var(--neon-pink);
+            animation: neon-flicker 8s infinite alternate, hue-rotate 20s linear infinite;
+            margin-bottom: 1.5rem;
+        }
+
+        @keyframes neon-flicker {
+            0%,19%,21%,23%,25%,54%,56%,100% { text-shadow: 0 0 20px var(--neon-cyan), 0 0 40px var(--neon-purple); opacity: 1; }
+            20%,24%,55% { text-shadow: none; opacity: 0.6; }
+        }
+
+        @keyframes hue-rotate {
+            0% { filter: hue-rotate(0deg); }
+            100% { filter: hue-rotate(360deg); }
+        }
+
+        .subtitle {
+            font-size: 1.6rem;
+            opacity: 0.85;
+            letter-spacing: 4px;
+            text-shadow: 0 0 15px rgba(0,240,255,0.7);
+        }
+
+        /* Shared Section Styles */
+        section {
+            padding: 120px 20px;
+            min-height: 100vh;
+            text-align: center;
+        }
+
+        section h2 {
+            font-size: 3rem;
+            margin-bottom: 40px;
+            color: var(--neon-cyan);
+            text-shadow: 0 0 20px var(--neon-cyan), 0 0 40px var(--neon-purple);
+            animation: neon-flicker 6s infinite alternate;
+        }
+
+        /* About Section */
+        #about p {
+            max-width: 800px;
+            margin: 0 auto 30px;
+            font-size: 1.2rem;
+            line-height: 1.8;
+            opacity: 0.9;
+            text-shadow: 0 0 10px rgba(255,255,255,0.3);
+        }
+
+        /* Skills Section */
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .skill-card {
+            background: rgba(5,0,10,0.6);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 6px 20px rgba(0,240,255,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .skill-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 35px rgba(0,240,255,0.4);
+        }
+
+        .skill-card h3 {
+            margin-bottom: 15px;
+            color: var(--neon-purple);
+            text-shadow: 0 0 15px var(--neon-purple);
+        }
+
+        .skill-card p {
+            opacity: 0.85;
+        }
+
+        /* Contact Section */
+        .contact-links {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .contact-links a {
+            font-size: 1.2rem;
+            text-decoration: none;
+            color: var(--text-light);
+            padding: 12px 25px;
+            border: 1px solid rgba(0,240,255,0.3);
+            border-radius: 30px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: max-content;
+        }
+
+        .contact-links a:hover {
+            color: var(--neon-cyan);
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 20px var(--neon-cyan), 0 0 40px var(--neon-purple);
+            transform: translateY(-5px);
+        }
+
+        /* Footer */
+        footer {
+            padding: 40px;
+            text-align: center;
+            opacity: 0.7;
+            border-top: 1px solid rgba(0,240,255,0.1);
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 4rem; letter-spacing: 5px; }
+            .profile-pic { width: 180px; height: 180px; }
+            header { padding: 1.2rem 1.5rem; }
+            .side-menu { width: 280px; right: -280px; }
+            section { padding: 100px 15px; }
+            section h2 { font-size: 2.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-particles"></div>
+
+    <input type="checkbox" id="menu-toggle" class="menu-toggle">
+    
+    <header>
+        <label for="menu-toggle" class="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </label>
+    </header>
+
+    <nav class="side-menu">
+        <ul>
+            <li><a href="#">Home</a></li>
+            <li><a href="#about">About Me</a></li>
+            <li><a href="#skills">Skills</a></li>
+            <li><a href="#contact">Contact</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <div class="profile-container">
+            <img 
+                src="https://pbs.twimg.com/profile_images/2027701299647496192/cajz20lD.jpg" 
+                alt="Rëstørē Profile" 
+                class="profile-pic"
+            >
+        </div>
+
+        <h1>RËSTØRË</h1>
+        <p class="subtitle">WEB3 BUILDER • COMMUNITY ARCHITECT • NEON DREAMER</p>
+    </main>
+
+    <section id="about">
+        <h2>About Me</h2>
+        <p>I'm a passionate Web3 enthusiast and builder from Nigeria, deeply involved in the blockchain and crypto space. I combine marketing expertise, hands-on development, and community leadership to help projects launch, grow, and thrive.</p>
+        <p>Whether it's promoting NFT drops, engaging in on-chain communities, joining spaces, or contributing to ecosystem tools — I'm all in on pushing Web3 forward. Currently exploring Solana-based projects, NFT mints (like Dead Monkeys on Gravemint), AI agents, trading terminals, and more. Always open to collaborations that bring real value to the space.</p>
+    </section>
+
+    <section id="skills">
+        <h2>Skills</h2>
+        <div class="skills-grid">
+            <div class="skill-card">
+                <h3>Web3 & Blockchain</h3>
+                <p>Solana ecosystem • NFT minting & promotion • Smart contract basics • On-chain tools & explorers</p>
+            </div>
+            <div class="skill-card">
+                <h3>Development</h3>
+                <p>HTML/CSS/JS • Git • Web apps • Scripting for Web3 utilities</p>
+            </div>
+            <div class="skill-card">
+                <h3>Marketing & Community</h3>
+                <p>Community building • Twitter/X growth • Project promotion • Spaces & engagement • WL management</p>
+            </div>
+            <div class="skill-card">
+                <h3>Other</h3>
+                <p>AI agent exploration • Trading tools • Content creation • Collaboration in fast-moving ecosystems</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact">
+        <h2>Contact</h2>
+        <div class="contact-links">
+            <a href="https://x.com/Sha_dowP" target="_blank">
+                <i class="fab fa-x-twitter"></i> X / Twitter: @Sha_dowP
+            </a>
+            <a href="https://t.me/RestoreQ" target="_blank">
+                <i class="fab fa-telegram"></i> Telegram: @RestoreQ
+            </a>
+            <a href="#">
+                <i class="fab fa-discord"></i> Discord: restore_6536
+            </a>
+            <a href="mailto:henryjosh6536@gmail.com">
+                <i class="fas fa-envelope"></i> Gmail: henryjosh6536@gmail.com
+            </a>
+        </div>
+    </section>
+
+    <footer>
+        © 2026 Rëstørē — Passionately building in Web3 • Made with ❤️ in Nigeria
+    </footer>
+
+</body>
+  </html>
